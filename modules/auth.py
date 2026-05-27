@@ -6,10 +6,23 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import cv2
-import face_recognition
+try:
+    import cv2  # type: ignore
+except ImportError:  # pragma: no cover
+    cv2 = None  # type: ignore[assignment]
+
+try:
+    import face_recognition  # type: ignore
+except ImportError:  # pragma: no cover
+    face_recognition = None  # type: ignore[assignment]
 
 from modules.utils import utc_timestamp
+
+
+def require_dependency(dep: Any, package_name: str) -> None:
+    if dep is None:
+        raise RuntimeError(f"Missing dependency: {package_name}. Install it, e.g.: pip install {package_name}")
+
 
 
 @dataclass
@@ -19,6 +32,14 @@ class FaceEncodings:
 
 
 class AuthenticationService:
+    
+    def _require_face_recognition(self) -> None:
+        require_dependency(face_recognition, "face_recognition")
+
+    def _require_cv2(self) -> None:
+        require_dependency(cv2, "opencv-python")
+
+    
     def __init__(self, cfg: Dict[str, Any], models_dir: str):
         self.cfg = cfg
         self.models_dir = models_dir
@@ -52,6 +73,9 @@ class AuthenticationService:
 
         Captures frames, detects face, and stores the first stable encoding found.
         """
+        self._require_cv2()
+        self._require_face_recognition()
+
         cap = cv2.VideoCapture(webcam_capture_device_index)
         if not cap.isOpened():
             raise RuntimeError("Unable to open webcam")

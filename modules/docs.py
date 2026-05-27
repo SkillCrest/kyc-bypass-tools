@@ -3,13 +3,31 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, Tuple
 
-import cv2
-import numpy as np
+try:
+    import cv2  # type: ignore
+except ImportError:  # pragma: no cover
+    cv2 = None  # type: ignore[assignment]
 
 try:
-    import easyocr
-except Exception:  # pragma: no cover
-    easyocr = None
+    import numpy as np  # type: ignore
+except ImportError:  # pragma: no cover
+    np = None  # type: ignore[assignment]
+
+try:
+    import easyocr  # type: ignore
+except ImportError:  # pragma: no cover
+    easyocr = None  # type: ignore[assignment]
+
+
+from modules.utils import clamp
+
+
+def require_dependency(dep: Any, package_name: str) -> None:
+    if dep is None:
+        raise RuntimeError(
+            f"Missing dependency: {package_name}. Install with: pip install {package_name}"
+        )
+
 
 
 @dataclass
@@ -20,6 +38,17 @@ class DocumentResult:
 
 
 class DocumentVerificationService:
+    
+    def _require_cv2(self) -> None:
+        require_dependency(cv2, "opencv-python")
+
+    def _require_numpy(self) -> None:
+        require_dependency(np, "numpy")
+
+    def _require_easyocr(self) -> None:
+        require_dependency(easyocr, "EasyOCR")
+
+
     """Document OCR + basic verification.
 
     Lightweight modular implementation.
@@ -31,10 +60,12 @@ class DocumentVerificationService:
         self.min_text_chars = int(cfg.get("min_text_chars", 10))
         self.confidence_threshold = float(cfg.get("confidence_threshold", 0.4))
 
+        self._require_numpy()
         self.reader = None
         if easyocr is not None:
             # EasyOCR uses CPU by default; gpu=True will use CUDA when available.
             self.reader = easyocr.Reader(self.languages, gpu=True)
+
 
     def capture_document(self, frame: np.ndarray) -> np.ndarray:
         if frame is None:
@@ -42,7 +73,10 @@ class DocumentVerificationService:
         return frame
 
     def preprocess_document(self, image_bgr: np.ndarray) -> np.ndarray:
+        self._require_cv2()
+        self._require_numpy()
         gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
+
         gray = cv2.bilateralFilter(gray, 9, 75, 75)
         th = cv2.adaptiveThreshold(
             gray,
@@ -56,7 +90,9 @@ class DocumentVerificationService:
 
     def extract_text(self, preprocessed: np.ndarray) -> Tuple[str, float]:
         if self.reader is None:
+            self._require_easyocr()
             return "", 0.0
+
 
         if len(preprocessed.shape) == 2:
             rgb = cv2.cvtColor(preprocessed, cv2.COLOR_GRAY2RGB)

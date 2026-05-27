@@ -20,6 +20,8 @@ auth:
   face_detection_model: "hog"  # hog or cnn
   tolerance: 0.55
   known_faces_encoding_file: "known_faces.pkl"
+  enrollment_max_attempts: 40
+  verification_max_checks: 90
 
 documents:
   languages: ["en"]
@@ -32,5 +34,5 @@ virtual_camera:
   fps: 30
   width: 1280
   height: 720
-  pixel_format: "bgra"
+  pixel_format: "bgra"  # pyvirtualcam fmt
 

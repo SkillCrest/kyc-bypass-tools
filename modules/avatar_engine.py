@@ -5,8 +5,23 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import cv2
-import numpy as np
+try:
+    import cv2  # type: ignore
+except ImportError:  # pragma: no cover
+    cv2 = None  # type: ignore[assignment]
+
+try:
+    import numpy as np  # type: ignore
+except ImportError:  # pragma: no cover
+    np = None  # type: ignore[assignment]
+
+from modules.utils import clamp
+
+
+def require_dependency(dep: Any, package_name: str) -> None:
+    if dep is None:
+        raise RuntimeError(f"Missing dependency: {package_name}. Install with: pip install {package_name}")
+
 
 
 @dataclass
@@ -16,6 +31,13 @@ class Avatar:
 
 
 class AvatarEngine:
+    
+    def _require_cv2(self) -> None:
+        require_dependency(cv2, "opencv-python")
+
+    def _require_numpy(self) -> None:
+        require_dependency(np, "numpy")
+
     """Avatar engine manager.
 
     This implementation focuses on fast, reliable avatar loading/switching.
@@ -30,6 +52,8 @@ class AvatarEngine:
         self.active_index: int = 0
 
     def load_avatar(self, image_path: str) -> Avatar:
+        self._require_cv2()
+        self._require_numpy()
         p = Path(image_path)
         if not p.exists():
             raise FileNotFoundError(str(p))
