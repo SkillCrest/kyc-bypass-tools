@@ -1,0 +1,36 @@
+app:
+  title: "AI Identity & Avatar Automation"
+  log_level: "INFO"
+
+paths:
+  avatars_dir: "avatars"
+  models_dir: "models"
+  logs_dir: "logs"
+  encodings_dir: "models/encodings"
+  documents_dir: "assets/documents"
+  screenshots_dir: "assets/screenshots"
+
+camera:
+  device_index: 0
+  width: 1280
+  height: 720
+  fps: 30
+
+auth:
+  face_detection_model: "hog"  # hog or cnn
+  tolerance: 0.55
+  known_faces_encoding_file: "known_faces.pkl"
+
+documents:
+  languages: ["en"]
+  min_text_chars: 10
+  confidence_threshold: 0.4
+
+virtual_camera:
+  enabled: false
+  device_index: 0
+  fps: 30
+  width: 1280
+  height: 720
+  pixel_format: "bgra"
+

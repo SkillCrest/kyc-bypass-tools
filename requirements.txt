@@ -1,0 +1,23 @@
+# Core
+PyYAML>=6.0.2
+
+# Vision / CV
+opencv-python>=4.10.0.84
+face_recognition>=1.3.0
+EasyOCR>=1.7.1
+
+# Avatar / tracking / motion retargeting (optional; install when used)
+mediapipe>=0.10.14
+
+# Virtual camera
+pyvirtualcam>=0.2.0
+
+# GUI
+PyQt6>=6.6.1
+
+# Performance
+numpy>=1.26.4
+
+# Logging / misc
+rich>=13.7.1
+
